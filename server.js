@@ -41,4 +41,5 @@ app.post('/api/analyze',upload.single('image'),async(req,res)=>{
 app.get("/", (req, res) => {
   res.sendFile(path.join(_dirname, "index.html"));
 });
+const port = process.env.PORT || 3000;
 app.listen(port,()=>console.log(`QX CHART AI PRO running on http://localhost:${port}`));

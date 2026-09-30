@@ -1,2 +1,221 @@
 <!DOCTYPE html>
-<html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>QX CHART AI PRO</title><style>*{box-sizing:border-box;font-family:Arial;margin:0}body{background:#070b14;color:#fff}.app{max-width:430px;margin:auto;min-height:100vh;background:#0d1220}.header{padding:20px;background:#111827;display:flex;justify-content:space-between}.admin{color:#00ff94;font-size:11px}.card{margin:15px;padding:20px;background:#161f35;border:1px solid #243252;border-radius:18px}.upload{border:2px dashed #2c4777;border-radius:15px;padding:25px 15px;text-align:center;background:#0f172a}.upload img{width:100%;display:none;margin-top:15px;border-radius:12px}.btn{width:100%;padding:16px;margin-top:15px;border:0;border-radius:12px;font-weight:900;background:linear-gradient(90deg,#00e5ff,#00ff94)}.btn:disabled{opacity:.5}.status{display:none}.status div{padding:7px;opacity:.3}.status .active{opacity:1;color:#00ff94}.error{display:none;margin-top:15px;padding:13px;border-radius:12px;background:#2a1212;color:#ff7777}.result{display:none}.signal{text-align:center;padding:15px;background:#0c1424;border-radius:15px}.signal-name{font-size:40px;font-weight:900}.up{color:#00ff88}.down{color:#ff4564}.neutral{color:#ffc04d}.info{margin-top:10px;padding:13px;background:#0d1729;border-radius:12px;line-height:1.7}.label{color:#8fa0ba;font-size:12px}.value{font-weight:bold}.warning{margin-top:15px;color:#ffbd55;text-align:center;font-size:12px;line-height:1.6}</style></head><body><div class="app"><div class="header"><b>⚡ QX CHART AI PRO</b><span class="admin">AI CHART ANALYZER</span></div><div class="card"><h3>📊 Trading Chart Analyzer</h3><div class="upload" onclick="file.click()"><p id="uploadText">📤 Chart Screenshot নির্বাচন করুন</p><img id="preview"><input id="file" type="file" accept="image/*" hidden></div><div id="error" class="error"></div><button id="analyzeBtn" class="btn" onclick="startAnalysis()">🤖 ANALYZE WITH AI</button></div><div id="status" class="card status"><div id="s1">● Image loading...</div><div id="s2">● Reading chart structure...</div><div id="s3">● Detecting candle pattern...</div><div id="s4">● Checking trend and key levels...</div><div id="s5">● Asking AI...</div></div><div id="result" class="card result"><div class="signal"><div class="label">AI CHART ASSESSMENT</div><div id="signal" class="signal-name neutral">WAIT</div><div id="confidence">Analysis confidence: --</div></div><div class="info"><div class="label">TREND</div><div id="trend" class="value">--</div></div><div class="info"><div class="label">CANDLE STRUCTURE</div><div id="candle" class="value">--</div></div><div class="info"><div class="label">SUPPORT</div><div id="support" class="value">--</div></div><div class="info"><div class="label">RESISTANCE</div><div id="resistance" class="value">--</div></div><div class="info"><div class="label">AI REASON</div><div id="reason" class="value">--</div></div><div class="warning">⚠️ Screenshot-ভিত্তিক analysis; নিশ্চিত ভবিষ্যদ্বাণী নয়। বাস্তব অর্থ ব্যবহারের আগে নিজে যাচাই করুন।</div></div></div><script>let selectedImage=null;file.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;if(!f.type.startsWith('image/'))return showError('শুধু image screenshot দিন।');selectedImage=f;const r=new FileReader();r.onload=x=>{preview.src=x.target.result;preview.style.display='block';uploadText.innerText='✅ Screenshot ready';hideError()};r.readAsDataURL(f)});async function startAnalysis(){if(!selectedImage)return showError('আগে একটি chart screenshot নির্বাচন করুন।');hideError();result.style.display='none';status.style.display='block';analyzeBtn.disabled=true;for(const id of ['s1','s2','s3','s4','s5']){document.getElementById(id).classList.add('active');await wait(450)}try{showResult(await sendToAI(selectedImage))}catch(e){showError(e.message||'AI server-এর সাথে যোগাযোগ করা যায়নি।')}analyzeBtn.disabled=false}async function sendToAI(file){const fd=new FormData();fd.append('image',file);const r=await fetch('https://qx-chart-ai-pro.onrender.com/api/analyze',{method:'POST',body:fd});let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(d.error||'Server error');return d}function showResult(d){status.style.display='none';result.style.display='block';const s=document.getElementById('signal'),dir=String(d.direction||'WAIT').toUpperCase();s.className='signal-name '+(dir==='UP'?'up':dir==='DOWN'?'down':'neutral');s.innerText=dir==='UP'?'⬆️ UP':dir==='DOWN'?'⬇️ DOWN':'⏸️ WAIT';confidence.innerText='Analysis confidence: '+(d.confidence??'--')+'%';trend.innerText=d.trend||'--';candle.innerText=d.candle_structure||'--';support.innerText=d.support||'--';resistance.innerText=d.resistance||'--';reason.innerText=d.reason||'--'}function wait(ms){return new Promise(r=>setTimeout(r,ms))}function showError(m){error.innerText='❌ '+m;error.style.display='block'}function hideError(){error.style.display='none'}</script></body></html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QX CHART AI PRO</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#07111f;
+  color:#fff;
+}
+
+.container{
+  max-width:650px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+  margin:10px 0 5px;
+  font-size:28px;
+}
+
+.subtitle{
+  text-align:center;
+  color:#9caec4;
+  margin-bottom:20px;
+}
+
+.card{
+  background:#101d2d;
+  border:1px solid #26384d;
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:16px;
+}
+
+.upload{
+  border:2px dashed #3d5875;
+  border-radius:14px;
+  padding:25px 15px;
+  text-align:center;
+  cursor:pointer;
+}
+
+.upload input{
+  display:none;
+}
+
+#preview{
+  display:none;
+  width:100%;
+  max-height:350px;
+  object-fit:contain;
+  border-radius:12px;
+  margin-top:15px;
+}
+
+.btn{
+  width:100%;
+  border:0;
+  border-radius:12px;
+  padding:16px;
+  margin-top:15px;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+  background:#1877f2;
+  color:white;
+}
+
+.btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.chat-btn{
+  background:#26384d;
+}
+
+.status{
+  display:none;
+  text-align:center;
+  padding:15px;
+  color:#b9c8d9;
+}
+
+.error{
+  display:none;
+  background:#421b1b;
+  color:#ffb4b4;
+  padding:12px;
+  border-radius:10px;
+  margin-top:12px;
+}
+
+.result{
+  display:none;
+}
+
+.signal{
+  text-align:center;
+  padding:20px;
+  border-radius:14px;
+  background:#172638;
+  margin-bottom:15px;
+}
+
+.signal-name{
+  font-size:36px;
+  font-weight:bold;
+}
+
+.up{color:#35d07f}
+.down{color:#ff5d6c}
+.neutral{color:#ffd166}
+
+.info{
+  background:#172638;
+  padding:12px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+.label{
+  font-size:12px;
+  color:#8fa5bd;
+  margin-bottom:5px;
+}
+
+.value{
+  font-size:15px;
+}
+
+.warning{
+  color:#aebdcd;
+  font-size:12px;
+  line-height:1.5;
+  margin-top:15px;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🤖 QX CHART AI PRO</h1>
+<div class="subtitle">AI Trading Chart Analyzer</div>
+
+<div class="card">
+
+<label class="upload">
+  <input type="file" id="file" accept="image/*">
+  <div id="uploadText">📤 Chart Screenshot নির্বাচন করুন</div>
+  <img id="preview" alt="Chart Preview">
+</label>
+
+<button id="analyzeBtn" class="btn" onclick="startAnalysis()">
+  🤖 ANALYZE WITH AI
+</button>
+
+<button id="chatBtn" class="btn chat-btn" onclick="chatWithAI()">
+  💬 CHAT WITH AI
+</button>
+
+<div id="error" class="error"></div>
+
+</div>
+
+<div id="status" class="card status">
+  <div id="s1">● Reading chart...</div>
+  <div id="s2">● Checking market structure...</div>
+  <div id="s3">● Asking AI...</div>
+</div>
+
+<div id="result" class="card result">
+
+<div class="signal">
+  <div class="label">AI SIGNAL</div>
+  <div id="signal" class="signal-name">WAIT</div>
+</div>
+
+<div class="info">
+  <div class="label">CONFIDENCE</div>
+  <div id="confidence" class="value">--</div>
+</div>
+
+<div class="info">
+  <div class="label">TREND</div>
+  <div id="trend" class="value">--</div>
+</div>
+
+<div class="info">
+  <div class="label">CANDLE STRUCTURE</div>
+  <div id="candle" class="value">--</div>
+</div>
+
+<div class="info">
+  <div class="label">SUPPORT</div>
+  <div id="support" class="value">--</div>
+</div>
+
+<div class="info">
+  <div class="label">RESISTANCE</div>
+  <div id="resistance" class="value">--</div>
+</div>
+
+<div class="info">
+  <div class="label">AI REASON</div>
+  <div id="reason" class="value">--</div>
+</div>
+
+<div
